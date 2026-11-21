@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Payments - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Payments</h1><p>Every payment we have received.</p></div>
+  <div class="actions"><a class="btn" href="{% url 'payment_create' %}">Record a payment</a></div>
+</div>
+<div class="card">
+  <div class="toolbar"><form method="get"><input class="field" type="search" name="q" value="{{ q }}" placeholder="Search by receipt or client"><button class="btn small" type="submit">Search</button></form></div>
+  {% if object_list %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Receipt</th><th>Client</th><th>Loan</th><th>Date</th><th>Method</th><th class="num">Amount</th><th></th></tr></thead>
+    <tbody>{% for p in object_list %}
+      <tr>
+        <td>{{ p.receipt_no }}</td>
+        <td>{{ p.loan.client }}</td>
+        <td><a class="strong" href="{% url 'loan_detail' p.loan.pk %}">#{{ p.loan.pk }}</a></td>
+        <td>{{ p.payment_date|date:"M j, Y" }}</td>
+        <td>{{ p.method }}</td>
+        <td class="num">₱{{ p.amount|floatformat:2 }}</td>
+        <td class="num"><a class="strong" href="{% url 'payment_receipt' p.pk %}">Receipt</a></td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% include "_pagination.html" %}
+  {% else %}<div class="empty">No payments recorded yet.</div>{% endif %}
+</div>
+{% endblock %}

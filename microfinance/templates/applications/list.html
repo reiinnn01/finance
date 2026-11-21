@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Loan Applications - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Loan applications</h1><p>Review requests and keep things moving.</p></div>
+  <div class="actions"><a class="btn" href="{% url 'application_create' %}">Start a new loan</a></div>
+</div>
+<div class="tabs">
+  <a class="tab active" href="{% url 'application_list' %}">Applications</a>
+  <a class="tab" href="{% url 'loan_list' %}">Running loans</a>
+</div>
+<div class="card">
+  <div class="toolbar">
+    <form method="get">
+      <select class="field" name="status" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in statuses %}<option value="{{ value }}"{% if value == status %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </form>
+  </div>
+  {% if object_list %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Client</th><th>Loan type</th><th class="num">Asking for</th><th>Over</th><th>Status</th><th></th></tr></thead>
+    <tbody>{% for a in object_list %}
+      <tr>
+        <td><div class="who"><span class="avatar">{{ a.client.initials }}</span>{{ a.client }}</div></td>
+        <td>{{ a.loan_type }}</td>
+        <td class="num">₱{{ a.amount_requested|floatformat:2 }}</td>
+        <td>{{ a.term_months }} months</td>
+        <td><span class="pill {% if a.status == 'Approved' %}green{% elif a.status == 'Rejected' %}red{% else %}amber{% endif %}">{{ a.status }}</span></td>
+        <td><div class="row-actions">
+          <a href="{% url 'application_detail' a.pk %}">Open</a>
+          {% if a.status == 'Pending' %}<a href="{% url 'application_update' a.pk %}">Edit</a><a class="del" href="{% url 'application_delete' a.pk %}">Delete</a>{% endif %}
+        </div></td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% include "_pagination.html" %}
+  {% else %}<div class="empty">No applications here yet.</div>{% endif %}
+</div>
+{% endblock %}

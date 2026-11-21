@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Backup &amp; Recovery - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Backup &amp; recovery</h1><p>Save a copy of your data, download it, or go back to an earlier one.</p></div>
+  <div class="actions"><form method="post" class="inline-form">{% csrf_token %}<button class="btn" name="action" value="backup" type="submit">Back up now</button></form></div>
+</div>
+<div class="card">
+  <h2>Restore from a file</h2>
+  <form method="post" enctype="multipart/form-data" onsubmit="return confirm('Restoring replaces current data with this file. Continue?');">
+    {% csrf_token %}
+    <div class="toolbar">
+      <input class="field" type="file" name="file" accept=".sql" required>
+      <button class="btn danger small" name="action" value="upload" type="submit">Upload and restore</button>
+    </div>
+  </form>
+</div>
+<div class="card">
+  <h2>History</h2>
+  {% if logs %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>When</th><th>File</th><th>Type</th><th>Done by</th><th>Result</th><th></th></tr></thead>
+    <tbody>{% for b in logs %}
+      <tr>
+        <td>{{ b.created_at|date:"M j, Y g:i A" }}</td><td>{{ b.file_name }}</td><td>{{ b.backup_type }}</td><td>{{ b.performed_by|default:"-" }}</td>
+        <td><span class="pill {% if b.status == 'Success' %}green{% else %}red{% endif %}">{{ b.status }}</span></td>
+        <td>{% if b.status == 'Success' and b.backup_type != 'Restore' %}
+          <div class="row-actions">
+            <a href="{% url 'backup_download' b.pk %}">Download</a>
+            <form class="inline-form" method="post" onsubmit="return confirm('Restoring replaces current data with this backup. Continue?');">{% csrf_token %}<input type="hidden" name="pk" value="{{ b.pk }}"><button class="del" name="action" value="restore" type="submit">Restore</button></form>
+          </div>{% endif %}</td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">No backups yet. Use Back up now to make the first one.</div>{% endif %}
+</div>
+{% endblock %}

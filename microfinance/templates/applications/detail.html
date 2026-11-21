@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Application #{{ object.pk }} - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ object.client }}</h1><p>Application #{{ object.pk }} · applied {{ object.applied_at|date:"M j, Y" }}</p></div>
+  <div class="actions"><a class="btn outline" href="{% url 'application_list' %}">Back to applications</a></div>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <h2>The request</h2>
+    <dl class="details">
+      <div><dt>Loan type</dt><dd>{{ object.loan_type }}</dd></div>
+      <div><dt>Asking for</dt><dd>₱{{ object.amount_requested|floatformat:2 }}</dd></div>
+      <div><dt>Over</dt><dd>{{ object.term_months }} months</dd></div>
+      <div><dt>Purpose</dt><dd>{{ object.purpose }}</dd></div>
+      <div><dt>Interest</dt><dd>{{ object.loan_type.interest_rate }}% a year, {{ object.loan_type.get_interest_method_display|lower }}</dd></div>
+      <div><dt>Status</dt><dd><span class="pill {% if object.status == 'Approved' %}green{% elif object.status == 'Rejected' %}red{% else %}amber{% endif %}">{{ object.status }}</span></dd></div>
+      {% if object.remarks %}<div><dt>Remarks</dt><dd>{{ object.remarks }}</dd></div>{% endif %}
+      {% if object.processed_by %}<div><dt>Decided by</dt><dd>{{ object.processed_by }} on {{ object.decided_at|date:"M j, Y" }}</dd></div>{% endif %}
+    </dl>
+  </div>
+  <div class="card">
+    <h2>What it would cost</h2>
+    <div class="estimate"><dl>
+      <dt>Interest</dt><dd>₱{{ estimate.total_interest }}</dd>
+      <dt>Total to pay back</dt><dd>₱{{ estimate.total_payable }}</dd>
+      <dt>Each month</dt><dd>₱{{ estimate.installment }}</dd>
+    </dl></div>
+    {% if object.status == 'Pending' %}
+      {% if ready %}<div class="reminder mint">This client has no late payments and income that comfortably covers the installment.</div>
+      {% elif overdue %}<div class="reminder peach">This client has overdue installments on another loan.</div>
+      {% else %}<div class="reminder peach">Income may be tight for this installment, or the client is not active. Take a closer look.</div>{% endif %}
+    {% endif %}
+  </div>
+</div>
+<div class="card">
+  <h2>Client</h2>
+  <dl class="details">
+    <div><dt>Name</dt><dd><a class="strong" href="{% url 'client_detail' object.client.pk %}">{{ object.client }}</a></dd></div>
+    <div><dt>Occupation</dt><dd>{{ object.client.occupation }}</dd></div>
+    <div><dt>Monthly income</dt><dd>₱{{ object.client.monthly_income|floatformat:2 }}</dd></div>
+    <div><dt>Contact</dt><dd>{{ object.client.contact_no }}</dd></div>
+  </dl>
+</div>
+{% if object.status == 'Pending' %}
+<div class="card">
+  <h2>Your decision</h2>
+  <form method="post" action="{% url 'application_decide' object.pk %}">
+    {% csrf_token %}
+    <div class="form-row"><label for="remarks">Remarks (needed when rejecting)</label><input class="field" id="remarks" name="remarks" maxlength="255"></div>
+    <div class="actions">
+      <button class="btn" type="submit" name="action" value="approve">Approve loan</button>
+      <button class="btn danger" type="submit" name="action" value="reject">Reject application</button>
+    </div>
+  </form>
+</div>
+{% elif object.status == 'Approved' %}
+<div class="actions"><a class="btn" href="{% url 'loan_detail' object.loan.pk %}">Open loan #{{ object.loan.pk }}</a></div>
+{% endif %}
+{% endblock %}

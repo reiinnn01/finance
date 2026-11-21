@@ -1,0 +1,33 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in - Microfinance</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<div class="auth">
+  <div class="auth-card">
+    <h1>Welcome back</h1>
+    <p>Sign in to see what needs your attention today.</p>
+    <form method="post">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form-error">Check your username and password, then try again.</div>{% endif %}
+      <div class="form-row">
+        <label for="id_username">Username</label>
+        <input class="field" type="text" name="username" id="id_username" autofocus required>
+      </div>
+      <div class="form-row">
+        <label for="id_password">Password</label>
+        <input class="field" type="password" name="password" id="id_password" required>
+      </div>
+      <input type="hidden" name="next" value="{{ next }}">
+      <button class="btn" type="submit">Sign in</button>
+    </form>
+    <p class="auth-switch">New here? <a href="{% url 'signup' %}">Create an account</a></p>
+  </div>
+</div>
+</body>
+</html>

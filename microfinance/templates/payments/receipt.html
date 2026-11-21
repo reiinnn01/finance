@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Receipt {{ object.receipt_no }} - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Payment receipt</h1></div>
+  <div class="actions">
+    <button class="btn" type="button" onclick="window.print()">Print receipt</button>
+    <a class="btn outline" href="{% url 'payment_list' %}">Back to payments</a>
+  </div>
+</div>
+<div class="card receipt">
+  <div class="label">Receipt no.</div>
+  <div><strong>{{ object.receipt_no }}</strong></div>
+  <hr>
+  <div class="label">Amount received</div>
+  <div class="big">₱{{ object.amount|floatformat:2 }}</div>
+  <hr>
+  <dl class="details">
+    <div><dt>Client</dt><dd>{{ object.loan.client }}</dd></div>
+    <div><dt>Loan</dt><dd>#{{ object.loan.pk }}</dd></div>
+    <div><dt>Date</dt><dd>{{ object.payment_date|date:"M j, Y" }}</dd></div>
+    <div><dt>Method</dt><dd>{{ object.method }}</dd></div>
+    <div><dt>Applied to</dt><dd>{% if object.schedule %}Installment {{ object.schedule.installment_no }} onward{% else %}-{% endif %}</dd></div>
+    <div><dt>Remaining balance</dt><dd>₱{{ object.loan.balance|floatformat:2 }}</dd></div>
+    <div><dt>Received by</dt><dd>{{ object.received_by|default:"-" }}</dd></div>
+  </dl>
+</div>
+{% endblock %}

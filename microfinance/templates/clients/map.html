@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Client map - Microfinance{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Where our clients are</h1><p>{{ points|length }} client{{ points|length|pluralize }} on the map{% if missing %}, {{ missing }} without a location yet{% endif %}.</p></div>
+  <div class="actions">
+    <a class="btn outline" href="{% url 'client_list' %}">Back to clients</a>
+    {% if missing and user.is_admin_role or missing and user.role_name == "Loan Officer" %}
+    <form method="post" action="{% url 'client_geocode' %}" class="inline-form">{% csrf_token %}<button class="btn" type="submit">Find missing locations</button></form>
+    {% endif %}
+  </div>
+</div>
+<div id="map"></div>
+{{ points|json_script:"client-points" }}
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'js/map.js' %}"></script>
+{% endblock %}

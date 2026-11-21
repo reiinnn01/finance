@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Home - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Welcome back</h1>
+    <p>Here's what needs your attention today, {{ today|date:"l, F j" }}.</p>
+  </div>
+  <div class="actions">
+    {% if user.is_admin_role or user.role_name == "Cashier" %}<a class="btn outline" href="{% url 'payment_create' %}">Record a payment</a>{% endif %}
+    {% if user.is_admin_role or user.role_name == "Loan Officer" %}<a class="btn" href="{% url 'application_create' %}">Start a new loan</a>{% endif %}
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="label">Loans running</div><div class="value">{{ loans_running }}</div><div class="note">families and businesses we're supporting</div></div>
+  <div class="stat"><div class="label">Still to collect</div><div class="value">₱{{ still_to_collect|floatformat:"0g" }}</div><div class="note">across all active loans</div></div>
+  <div class="stat mint"><div class="label">Collected today</div><div class="value">₱{{ collected_today|floatformat:"0g" }}</div><div class="note">thank you for the great work</div></div>
+  <div class="stat peach"><div class="label">Need a friendly follow-up</div><div class="value">{{ late_clients }}</div><div class="note">clients with late payments</div></div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-head">
+      <h2>Waiting for your decision</h2>
+      {% if user.is_admin_role or user.role_name == "Loan Officer" %}<a class="strong" href="{% url 'application_list' %}?status=Pending">See everyone</a>{% endif %}
+    </div>
+    {% if pending %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Client</th><th>Asking for</th><th>Over</th><th>Where it stands</th><th></th></tr></thead>
+        <tbody>
+          {% for app in pending %}
+          <tr>
+            <td><div class="who"><span class="avatar">{{ app.client.initials }}</span>{{ app.client }}</div></td>
+            <td>₱{{ app.amount_requested|floatformat:"0g" }}</td>
+            <td>{{ app.term_months }} months</td>
+            <td>{% if app.ready %}<span class="pill blue">Ready to approve</span>{% else %}<span class="pill amber">Needs a look</span>{% endif %}</td>
+            <td class="num">{% if user.is_admin_role or user.role_name == "Loan Officer" %}<a class="strong" href="{% url 'application_detail' app.pk %}">Open</a>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty">No applications are waiting. New ones will show up here.</div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Gentle reminders</h2>
+    {% if penalized_accounts %}<div class="reminder peach">{{ penalized_accounts }} account{{ penalized_accounts|pluralize }} {{ penalized_accounts|pluralize:"is,are" }} past the grace period, so penalties were added. A quick call might help.</div>{% endif %}
+    <div class="reminder mint">{% if due_tomorrow %}{{ due_tomorrow }} payment{{ due_tomorrow|pluralize }} {{ due_tomorrow|pluralize:"is,are" }} due tomorrow. Clients may appreciate a reminder.{% else %}No payments are due tomorrow.{% endif %}</div>
+    <div class="reminder sand">{% if last_backup and last_backup.status == "Success" %}Your data is safe: the last backup finished successfully on {{ last_backup.created_at|date:"M j, g:i A" }}.{% elif last_backup %}The last backup did not finish. Please try again from Backup &amp; Recovery.{% else %}No backup has been made yet. You can start one from Backup &amp; Recovery.{% endif %}</div>
+  </div>
+</div>
+{% endblock %}

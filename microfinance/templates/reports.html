@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Reports - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Reports</h1><p>{% if start == end %}{{ start|date:"l, F j, Y" }}{% else %}{{ start|date:"M j" }} to {{ end|date:"M j, Y" }}{% endif %}</p></div>
+  <div class="actions"><button class="btn outline" type="button" onclick="window.print()">Print report</button></div>
+</div>
+<div class="tabs">
+  <a class="tab{% if period == 'daily' %} active{% endif %}" href="?period=daily&date={{ ref|date:'Y-m-d' }}">Daily</a>
+  <a class="tab{% if period == 'weekly' %} active{% endif %}" href="?period=weekly&date={{ ref|date:'Y-m-d' }}">Weekly</a>
+  <a class="tab{% if period == 'monthly' %} active{% endif %}" href="?period=monthly&date={{ ref|date:'Y-m-d' }}">Monthly</a>
+</div>
+<div class="toolbar">
+  <form method="get">
+    <input type="hidden" name="period" value="{{ period }}">
+    <input class="field" type="date" name="date" value="{{ ref|date:'Y-m-d' }}">
+    <button class="btn small" type="submit">Show report</button>
+  </form>
+</div>
+<div class="stats">
+  <div class="stat"><div class="label">Total disbursed</div><div class="value">₱{{ total_disbursed|floatformat:"0g" }}</div><div class="note">{{ loan_count }} loan{{ loan_count|pluralize }} released</div></div>
+  <div class="stat mint"><div class="label">Total collections</div><div class="value">₱{{ total_collections|floatformat:"0g" }}</div><div class="note">{{ payment_count }} payment{{ payment_count|pluralize }} received</div></div>
+  <div class="stat peach"><div class="label">Outstanding balances</div><div class="value">₱{{ outstanding|floatformat:"0g" }}</div><div class="note">across all active loans today</div></div>
+</div>
+<div class="card">
+  <h2>Loans released</h2>
+  {% if loans %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Loan</th><th>Client</th><th>Released</th><th class="num">Principal</th><th class="num">Total payable</th></tr></thead>
+    <tbody>{% for l in loans %}<tr><td><a class="strong" href="{% url 'loan_detail' l.pk %}">#{{ l.pk }}</a></td><td>{{ l.client }}</td><td>{{ l.release_date|date:"M j, Y" }}</td><td class="num">₱{{ l.principal|floatformat:2 }}</td><td class="num">₱{{ l.total_payable|floatformat:2 }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">No loans were released in this period.</div>{% endif %}
+</div>
+<div class="card">
+  <h2>Payments received</h2>
+  {% if payments %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Receipt</th><th>Client</th><th>Date</th><th>Method</th><th class="num">Amount</th></tr></thead>
+    <tbody>{% for p in payments %}<tr><td>{{ p.receipt_no }}</td><td>{{ p.loan.client }}</td><td>{{ p.payment_date|date:"M j, Y" }}</td><td>{{ p.method }}</td><td class="num">₱{{ p.amount|floatformat:2 }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">No payments were received in this period.</div>{% endif %}
+</div>
+<div class="card">
+  <h2>All loans by status</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Status</th><th class="num">Loans</th></tr></thead>
+    <tbody>{% for s in status_counts %}<tr><td>{{ s.status }}</td><td class="num">{{ s.n }}</td></tr>{% empty %}<tr><td colspan="2" class="empty">No loans yet.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Clients - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Clients</h1><p>Everyone we lend to, in one place.</p></div>
+  <div class="actions">
+    <a class="btn outline" href="{% url 'client_map' %}">See on map</a>
+    {% if user.is_admin_role or user.role_name == "Loan Officer" %}<a class="btn" href="{% url 'client_create' %}">Register a client</a>{% endif %}
+  </div>
+</div>
+<div class="card">
+  <div class="toolbar">
+    <form method="get"><input class="field" type="search" name="q" value="{{ q }}" placeholder="Search by name, number or ID"><button class="btn small" type="submit">Search</button></form>
+  </div>
+  {% if object_list %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Client</th><th>Contact</th><th>Occupation</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for c in object_list %}
+        <tr>
+          <td>{{ c.pk }}</td>
+          <td><div class="who"><span class="avatar">{{ c.initials }}</span><a class="strong" href="{% url 'client_detail' c.pk %}">{{ c }}</a></div></td>
+          <td>{{ c.contact_no }}</td>
+          <td>{{ c.occupation }}</td>
+          <td><span class="pill {% if c.status == 'Active' %}green{% elif c.status == 'Blacklisted' %}red{% else %}gray{% endif %}">{{ c.status }}</span></td>
+          <td>
+            <div class="row-actions">
+              <a href="{% url 'client_detail' c.pk %}">Open</a>
+              {% if user.is_admin_role or user.role_name == "Loan Officer" %}
+              <a href="{% url 'client_update' c.pk %}">Edit</a>
+              <a class="del" href="{% url 'client_delete' c.pk %}">Delete</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "_pagination.html" %}
+  {% else %}
+  <div class="empty">No clients found. Register your first client to get started.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Loan #{{ object.pk }} - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Loan #{{ object.pk }}</h1><p>{{ object.client }} · {{ object.application.loan_type }}</p></div>
+  <div class="actions">
+    {% if object.status == 'Active' and user.is_admin_role or object.status == 'Active' and user.role_name == 'Cashier' %}<a class="btn" href="{% url 'payment_create' %}?loan={{ object.pk }}">Record a payment</a>{% endif %}
+  </div>
+</div>
+<div class="stats">
+  <div class="stat"><div class="label">Borrowed</div><div class="value">₱{{ object.principal|floatformat:"0g" }}</div><div class="note">at {{ object.interest_rate }}% a year over {{ object.term_months }} months</div></div>
+  <div class="stat"><div class="label">Total to pay back</div><div class="value">₱{{ object.total_payable|floatformat:"0g" }}</div><div class="note">₱{{ object.installment_amount|floatformat:2 }} each month</div></div>
+  <div class="stat mint"><div class="label">Paid so far</div><div class="value">₱{{ total_paid|floatformat:"0g" }}</div><div class="note">released {{ object.release_date|date:"M j, Y" }}</div></div>
+  <div class="stat peach"><div class="label">Remaining balance</div><div class="value">₱{{ object.balance|floatformat:"0g" }}</div><div class="note">{{ object.status }} · ends {{ object.maturity_date|date:"M j, Y" }}</div></div>
+</div>
+<div class="card">
+  <h2>Payment schedule</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Due date</th><th class="num">Principal</th><th class="num">Interest</th><th class="num">Amount due</th><th class="num">Paid</th><th>Status</th><th class="num">Penalty</th></tr></thead>
+    <tbody>{% for s in schedule %}
+      <tr>
+        <td>{{ s.installment_no }}</td>
+        <td>{{ s.due_date|date:"M j, Y" }}</td>
+        <td class="num">₱{{ s.principal_due|floatformat:2 }}</td>
+        <td class="num">₱{{ s.interest_due|floatformat:2 }}</td>
+        <td class="num">₱{{ s.amount_due|floatformat:2 }}</td>
+        <td class="num">₱{{ s.amount_paid|floatformat:2 }}</td>
+        <td><span class="pill {% if s.status == 'Paid' %}green{% elif s.status == 'Overdue' %}red{% elif s.status == 'Partial' %}amber{% else %}gray{% endif %}">{{ s.status }}</span></td>
+        <td class="num">{% for p in s.penalties.all %}₱{{ p.amount|floatformat:2 }}{% empty %}-{% endfor %}</td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+</div>
+<div class="card">
+  <h2>Payments received</h2>
+  {% if payments %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Receipt</th><th>Date</th><th>Method</th><th class="num">Amount</th><th>Received by</th></tr></thead>
+    <tbody>{% for p in payments %}
+      <tr><td>{% if user.is_admin_role or user.role_name == 'Cashier' or user.role_name == 'Loan Officer' or user.role_name == 'Client' %}<a class="strong" href="{% url 'payment_receipt' p.pk %}">{{ p.receipt_no }}</a>{% else %}{{ p.receipt_no }}{% endif %}</td><td>{{ p.payment_date|date:"M j, Y" }}</td><td>{{ p.method }}</td><td class="num">₱{{ p.amount|floatformat:2 }}</td><td>{{ p.received_by|default:"-" }}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">No payments yet.</div>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Home - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Hello, {{ client.first_name }}</h1>
+    <p>Here's where your loans stand today, {{ today|date:"l, F j" }}.</p>
+  </div>
+  <div class="actions"><a class="btn" href="{% url 'portal_apply' %}">Apply for a loan</a></div>
+</div>
+
+{% if client.status != 'Active' %}<div class="reminder peach">Your account is {{ client.status|lower }}, so new applications are paused. Please contact our office.</div>{% endif %}
+
+<div class="stats">
+  <div class="stat"><div class="label">Loans running</div><div class="value">{{ active_count }}</div><div class="note">loans you are paying now</div></div>
+  <div class="stat"><div class="label">Still to pay</div><div class="value">₱{{ balance|floatformat:"0g" }}</div><div class="note">across your active loans</div></div>
+  <div class="stat mint"><div class="label">Next payment</div>
+    {% if next_due %}<div class="value">₱{{ next_due.outstanding|floatformat:"0g" }}</div><div class="note">due {{ next_due.due_date|date:"M j, Y" }}</div>
+    {% else %}<div class="value">None</div><div class="note">nothing is due right now</div>{% endif %}
+  </div>
+  <div class="stat peach"><div class="label">Waiting for a decision</div><div class="value">{{ pending_count }}</div><div class="note">application{{ pending_count|pluralize }} under review</div></div>
+</div>
+
+<div class="card">
+  <h2>My loans</h2>
+  {% if loans %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Loan</th><th>Type</th><th class="num">Borrowed</th><th class="num">Balance</th><th>Next due</th><th>Status</th><th></th></tr></thead>
+    <tbody>{% for l in loans %}
+      <tr>
+        <td>#{{ l.pk }}</td>
+        <td>{{ l.application.loan_type }}</td>
+        <td class="num">₱{{ l.principal|floatformat:2 }}</td>
+        <td class="num">₱{{ l.balance|floatformat:2 }}</td>
+        <td>{% if l.next_due and l.status == 'Active' %}{{ l.next_due.due_date|date:"M j, Y" }}{% else %}-{% endif %}</td>
+        <td><span class="pill {% if l.status == 'Paid' %}green{% elif l.status == 'Defaulted' %}red{% else %}blue{% endif %}">{{ l.status }}</span></td>
+        <td class="num"><a class="strong" href="{% url 'loan_detail' l.pk %}">Open</a></td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">You don't have a loan yet. Apply for one to get started.</div>{% endif %}
+</div>
+
+<div class="card">
+  <h2>My applications</h2>
+  {% if applications %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Sent</th><th>Type</th><th class="num">Asking for</th><th>Over</th><th>Where it stands</th><th>Remarks</th></tr></thead>
+    <tbody>{% for a in applications %}
+      <tr>
+        <td>{{ a.applied_at|date:"M j, Y" }}</td><td>{{ a.loan_type }}</td>
+        <td class="num">₱{{ a.amount_requested|floatformat:2 }}</td><td>{{ a.term_months }} months</td>
+        <td><span class="pill {% if a.status == 'Approved' %}green{% elif a.status == 'Rejected' %}red{% else %}amber{% endif %}">{% if a.status == 'Pending' %}Under review{% else %}{{ a.status }}{% endif %}</span></td>
+        <td>{{ a.remarks|default:"-" }}</td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">No applications yet.</div>{% endif %}
+</div>
+{% endblock %}

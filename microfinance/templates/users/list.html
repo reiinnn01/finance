@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}User Accounts - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>User accounts</h1><p>Each person signs in with their own login and sees what their role allows.</p></div>
+  <div class="actions"><a class="btn" href="{% url 'user_create' %}">Add a user</a></div>
+</div>
+<div class="card">
+  <div class="table-wrap"><table>
+    <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
+    <tbody>{% for u in object_list %}
+      <tr>
+        <td><div class="who"><span class="avatar">{{ u.initials }}</span>{{ u.full_name }}</div></td>
+        <td>{{ u.username }}</td><td>{{ u.email }}</td><td>{{ u.role|default:"-" }}</td>
+        <td><span class="pill {% if u.is_active %}green{% else %}gray{% endif %}">{% if u.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+        <td><div class="row-actions"><a href="{% url 'user_update' u.pk %}">Edit</a>{% if u.pk != user.pk %}<a class="del" href="{% url 'user_delete' u.pk %}">Delete</a>{% endif %}</div></td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

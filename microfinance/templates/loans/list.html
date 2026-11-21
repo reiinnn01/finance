@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Loans - Microfinance{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Running loans</h1><p>Balances and schedules for every released loan.</p></div></div>
+<div class="tabs">
+  <a class="tab" href="{% url 'application_list' %}">Applications</a>
+  <a class="tab active" href="{% url 'loan_list' %}">Running loans</a>
+</div>
+<div class="card">
+  <div class="toolbar">
+    <form method="get">
+      <input class="field" type="search" name="q" value="{{ q }}" placeholder="Search by client name">
+      <select class="field" name="status">
+        <option value="">All statuses</option>
+        {% for value, label in statuses %}<option value="{{ value }}"{% if value == status %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <button class="btn small" type="submit">Filter</button>
+    </form>
+  </div>
+  {% if object_list %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Loan</th><th>Client</th><th>Released</th><th class="num">Total payable</th><th class="num">Balance</th><th>Status</th><th></th></tr></thead>
+    <tbody>{% for l in object_list %}
+      <tr>
+        <td>#{{ l.pk }}</td>
+        <td>{{ l.client }}</td>
+        <td>{{ l.release_date|date:"M j, Y" }}</td>
+        <td class="num">₱{{ l.total_payable|floatformat:2 }}</td>
+        <td class="num">₱{{ l.balance|floatformat:2 }}</td>
+        <td><span class="pill {% if l.status == 'Paid' %}green{% elif l.status == 'Defaulted' %}red{% else %}blue{% endif %}">{{ l.status }}</span></td>
+        <td class="num"><a class="strong" href="{% url 'loan_detail' l.pk %}">Open</a></td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% include "_pagination.html" %}
+  {% else %}<div class="empty">No loans match. Approved applications become loans here.</div>{% endif %}
+</div>
+{% endblock %}
