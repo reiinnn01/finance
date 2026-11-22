@@ -286,6 +286,8 @@ def _env():
 
 
 def run_backup(user, backup_type=BackupLog.Kind.MANUAL):
+    if _db()['ENGINE'].endswith('sqlite3'):
+        return BackupLog.objects.create(performed_by=user, file_name='unavailable', backup_type=BackupLog.Kind.MANUAL, status=BackupLog.Status.FAILED)
     settings.BACKUP_DIR.mkdir(parents=True, exist_ok=True)
     name = f'backup_{timezone.localtime():%Y%m%d_%H%M%S}.sql'
     path = settings.BACKUP_DIR / name
@@ -307,6 +309,8 @@ def run_backup(user, backup_type=BackupLog.Kind.MANUAL):
 
 
 def run_restore(user, log):
+    if _db()['ENGINE'].endswith('sqlite3'):
+        return BackupLog.objects.create(performed_by=user, file_name='unavailable', backup_type=BackupLog.Kind.MANUAL, status=BackupLog.Status.FAILED)
     path = settings.BACKUP_DIR / os.path.basename(log.file_name)
     status = BackupLog.Status.SUCCESS
     try:
