@@ -1,0 +1,6 @@
+.env
+backups/*.sql
+__pycache__/
+*.pyc
+venv/
+staticfiles/

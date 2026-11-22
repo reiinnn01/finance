@@ -1,11 +1,16 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'change-this-to-a-long-random-string')
-DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+load_dotenv(BASE_DIR / '.env')
+
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-only-key-change-me')
+DEBUG = os.environ.get('DJANGO_DEBUG', '0') == '1'
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get('DJANGO_CSRF_ORIGINS', '').split(',') if o.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -55,7 +60,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.environ.get('DB_NAME', 'microfinance_db'),
         'USER': os.environ.get('DB_USER', 'root'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'root'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
         'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
         'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
@@ -90,8 +95,8 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
 BACKUP_DIR = BASE_DIR / 'backups'
-MYSQLDUMP_PATH = r'C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe'
-MYSQL_CLIENT_PATH = r'C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe'
+MYSQLDUMP_PATH = os.environ.get('MYSQLDUMP_PATH', 'mysqldump')
+MYSQL_CLIENT_PATH = os.environ.get('MYSQL_CLIENT_PATH', 'mysql')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -102,4 +107,3 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
 }
-
