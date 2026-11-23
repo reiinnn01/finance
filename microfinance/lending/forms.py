@@ -21,23 +21,19 @@ class StyledModelForm(forms.ModelForm):
 class ClientForm(StyledModelForm):
     class Meta:
         model = Client
-        fields = ['first_name', 'last_name', 'birth_date', 'contact_no', 'address', 'occupation',
-                  'monthly_income', 'valid_id_type', 'valid_id_no', 'status']
+        fields = ['first_name', 'middle_name', 'last_name', 'sex', 'civil_status', 'birth_date', 'contact_no',
+                  'email', 'address', 'employer_name', 'occupation', 'monthly_income',
+                  'emergency_contact_name', 'emergency_contact_no', 'valid_id_type', 'valid_id_no', 'status']
         widgets = {'birth_date': date_input()}
 
-    def clean_birth_date(self):
-        born = self.cleaned_data['birth_date']
-        today = date.today()
-        age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-        if age < 18:
-            raise forms.ValidationError('Client must be at least 18 years old.')
-        return born
-
-    def clean_contact_no(self):
-        number = self.cleaned_data['contact_no'].replace(' ', '').replace('-', '')
-        if not number.lstrip('+').isdigit() or len(number) < 7:
-            raise forms.ValidationError('Enter a valid contact number.')
-        return self.cleaned_data['contact_no']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ('sex', 'civil_status', 'email', 'employer_name', 'emergency_contact_name', 'emergency_contact_no'):
+            self.fields[name].required = True
+        self.fields['middle_name'].required = False
+        self.fields['employer_name'].label = 'Employer or business name'
+        self.fields['emergency_contact_name'].label = 'Emergency contact name'
+        self.fields['emergency_contact_no'].label = 'Emergency contact number'
 
     def clean(self):
         data = super().clean()
@@ -49,7 +45,6 @@ class ClientForm(StyledModelForm):
             if clash.exists():
                 self.add_error('valid_id_no', 'A client with this ID is already registered.')
         return data
-
 
 class LoanApplicationForm(StyledModelForm):
     class Meta:
@@ -141,11 +136,14 @@ class SignupForm(ClientForm):
     password2 = forms.CharField(label='Confirm password', widget=forms.PasswordInput)
 
     class Meta(ClientForm.Meta):
-        fields = ['first_name', 'last_name', 'birth_date', 'contact_no', 'address', 'occupation',
-                  'monthly_income', 'valid_id_type', 'valid_id_no']
+        fields = ['first_name', 'middle_name', 'last_name', 'sex', 'civil_status', 'birth_date', 'contact_no',
+                  'email', 'address', 'employer_name', 'occupation', 'monthly_income',
+                  'emergency_contact_name', 'emergency_contact_no', 'valid_id_type', 'valid_id_no']
 
-    field_order = ['username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'birth_date',
-                   'contact_no', 'address', 'occupation', 'monthly_income', 'valid_id_type', 'valid_id_no']
+    field_order = ['username', 'password1', 'password2', 'first_name', 'middle_name', 'last_name', 'sex',
+                   'civil_status', 'birth_date', 'contact_no', 'email', 'address', 'employer_name',
+                   'occupation', 'monthly_income', 'emergency_contact_name', 'emergency_contact_no',
+                   'valid_id_type', 'valid_id_no']
 
     def clean_username(self):
         username = self.cleaned_data['username']

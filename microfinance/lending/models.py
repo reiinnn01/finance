@@ -89,16 +89,33 @@ class Client(models.Model):
         INACTIVE = 'Inactive', 'Inactive'
         BLACKLISTED = 'Blacklisted', 'Blacklisted'
 
+    class Sex(models.TextChoices):
+        MALE = 'Male', 'Male'
+        FEMALE = 'Female', 'Female'
+
+    class CivilStatus(models.TextChoices):
+        SINGLE = 'Single', 'Single'
+        MARRIED = 'Married', 'Married'
+        WIDOWED = 'Widowed', 'Widowed'
+        SEPARATED = 'Separated', 'Separated'
+
     client_id = models.AutoField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, db_column='user_id', related_name='client_profile')
     registered_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_column='registered_by', related_name='registered_clients')
     first_name = models.CharField(max_length=50)
+    middle_name = models.CharField(max_length=50, blank=True, default='')
     last_name = models.CharField(max_length=50)
+    sex = models.CharField(max_length=10, choices=Sex.choices, blank=True, default='')
+    civil_status = models.CharField(max_length=20, choices=CivilStatus.choices, blank=True, default='')
     birth_date = models.DateField()
     contact_no = models.CharField(max_length=20)
+    email = models.EmailField(max_length=100, blank=True, default='')
     address = models.CharField(max_length=255)
+    employer_name = models.CharField(max_length=100, blank=True, default='')
     occupation = models.CharField(max_length=100)
     monthly_income = models.DecimalField(max_digits=12, decimal_places=2)
+    emergency_contact_name = models.CharField(max_length=100, blank=True, default='')
+    emergency_contact_no = models.CharField(max_length=20, blank=True, default='')
     valid_id_type = models.CharField(max_length=50)
     valid_id_no = models.CharField(max_length=50)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)

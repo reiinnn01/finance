@@ -12,12 +12,18 @@
 </div>
 <div class="card">
   <h2>Profile</h2>
-  <dl class="details">
+    <dl class="details">
+    <div><dt>Full name</dt><dd>{{ object.first_name }} {{ object.middle_name }} {{ object.last_name }}</dd></div>
+    <div><dt>Sex</dt><dd>{{ object.sex|default:"-" }}</dd></div>
+    <div><dt>Civil status</dt><dd>{{ object.civil_status|default:"-" }}</dd></div>
     <div><dt>Birth date</dt><dd>{{ object.birth_date|date:"M j, Y" }}</dd></div>
     <div><dt>Contact</dt><dd>{{ object.contact_no }}</dd></div>
+    <div><dt>Email</dt><dd>{{ object.email|default:"-" }}</dd></div>
     <div><dt>Address</dt><dd>{{ object.address }}</dd></div>
+    <div><dt>Employer or business</dt><dd>{{ object.employer_name|default:"-" }}</dd></div>
     <div><dt>Occupation</dt><dd>{{ object.occupation }}</dd></div>
     <div><dt>Monthly income</dt><dd>₱{{ object.monthly_income|floatformat:2 }}</dd></div>
+    <div><dt>Emergency contact</dt><dd>{{ object.emergency_contact_name|default:"-" }}{% if object.emergency_contact_no %} · {{ object.emergency_contact_no }}{% endif %}</dd></div>
     <div><dt>Valid ID</dt><dd>{{ object.valid_id_type }} · {{ object.valid_id_no }}</dd></div>
     <div><dt>Status</dt><dd>{{ object.status }}</dd></div>
   </dl>
