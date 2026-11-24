@@ -1,7 +1,9 @@
 import random
 from datetime import datetime, time, timedelta
 from decimal import Decimal
-
+from io import BytesIO
+from django.core.files.base import ContentFile
+from PIL import Image, ImageDraw
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -25,6 +27,15 @@ REMARKS = ['Income is too low for the requested amount', 'Incomplete requirement
 def at(day, hour=9):
     return timezone.make_aware(datetime.combine(day, time(hour, 0)))
 
+def id_image(label, text):
+    image = Image.new('RGB', (640, 400), (236, 240, 232))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((20, 20, 620, 380), outline=(31, 102, 80), width=4)
+    draw.text((40, 40), f'SAMPLE ID - {label}', fill=(31, 74, 64))
+    draw.text((40, 90), text, fill=(42, 36, 32))
+    buffer = BytesIO()
+    image.save(buffer, 'PNG')
+    return ContentFile(buffer.getvalue())
 
 class Command(BaseCommand):
     help = 'Generate fake clients, loans, payments and penalties'
@@ -122,6 +133,9 @@ class Command(BaseCommand):
             latitude=Decimal(f'{random.uniform(14.10, 14.30):.6f}'),
             longitude=Decimal(f'{random.uniform(121.05, 121.25):.6f}'),
         )
+        client.id_front.save(f'front_{client.pk}.png', id_image('FRONT', client.full_name), save=False)
+        client.id_back.save(f'back_{client.pk}.png', id_image('BACK', client.valid_id_no), save=False)
+        client.save(update_fields=['id_front', 'id_back'])
         Client.objects.filter(pk=client.pk).update(created_at=timezone.now() - timedelta(days=random.randint(430, 520)))
         return client
 

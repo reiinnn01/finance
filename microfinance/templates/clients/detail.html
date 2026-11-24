@@ -29,6 +29,15 @@
   </dl>
 </div>
 <div class="card">
+  <h2>Valid ID photos</h2>
+  {% if object.id_front or object.id_back %}
+  <div class="id-photos">
+    {% if object.id_front %}<figure><img src="{% url 'client_id_image' object.pk 'front' %}" alt="Front of valid ID"><figcaption>Front</figcaption></figure>{% endif %}
+    {% if object.id_back %}<figure><img src="{% url 'client_id_image' object.pk 'back' %}" alt="Back of valid ID"><figcaption>Back</figcaption></figure>{% endif %}
+  </div>
+  {% else %}<div class="empty">No ID photos uploaded yet.</div>{% endif %}
+</div>
+<div class="card">
   <h2>Loans</h2>
   {% if loans %}
   <div class="table-wrap"><table>

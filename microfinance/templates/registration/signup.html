@@ -12,7 +12,7 @@
   <div class="auth-card wide">
     <h1>Create your account</h1>
     <p>Tell us a little about you so you can apply for a loan and follow your payments.</p>
-    <form method="post" novalidate>
+    <form method="post" novalidate enctype="multipart/form-data">
       {% csrf_token %}
       {% if form.non_field_errors %}<div class="form-error">{% for e in form.non_field_errors %}{{ e }} {% endfor %}</div>{% endif %}
       {% for field in form %}

@@ -48,6 +48,7 @@ class ClientAdmin(admin.ModelAdmin):
     list_display = ('client_id', 'last_name', 'first_name', 'contact_no', 'occupation', 'monthly_income', 'status')
     list_filter = ('status',)
     search_fields = ('first_name', 'last_name', 'contact_no', 'valid_id_no')
+    exclude = ('id_front', 'id_back')
 
 
 @admin.register(LoanType)

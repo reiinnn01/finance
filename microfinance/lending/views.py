@@ -1,13 +1,11 @@
 import os
 import calendar
 import time
+import mimetypes
 from datetime import datetime, timedelta
 from decimal import Decimal
-
-
 from django.conf import settings
 from django.http import FileResponse, Http404
-
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -674,3 +672,13 @@ class PortalApply(ClientPortalMixin, CreateView):
         services.notify_admins(notify_text, Notification.Kind.INFO, client=client)
         messages.success(self.request, 'Application sent. We will let you know once it is reviewed.')
         return redirect(self.success_url)
+
+class ClientIdImage(LoginRequiredMixin, View):
+    def get(self, request, pk, side):
+        client = get_object_or_404(Client, pk=pk)
+        user = request.user
+        allowed = user.is_admin_role or user.role_name == OFFICER or client.user_id == user.pk
+        photo = {'front': client.id_front, 'back': client.id_back}.get(side)
+        if not allowed or not photo:
+            raise Http404
+        return FileResponse(photo.open('rb'), content_type=mimetypes.guess_type(photo.name)[0] or 'image/jpeg')

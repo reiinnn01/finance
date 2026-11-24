@@ -1,5 +1,5 @@
 from datetime import date
-
+from django.core.files.uploadedfile import UploadedFile
 from django import forms
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
@@ -23,17 +23,37 @@ class ClientForm(StyledModelForm):
         model = Client
         fields = ['first_name', 'middle_name', 'last_name', 'sex', 'civil_status', 'birth_date', 'contact_no',
                   'email', 'address', 'employer_name', 'occupation', 'monthly_income',
-                  'emergency_contact_name', 'emergency_contact_no', 'valid_id_type', 'valid_id_no', 'status']
-        widgets = {'birth_date': date_input()}
+                  'emergency_contact_name', 'emergency_contact_no', 'valid_id_type', 'valid_id_no',
+                  'id_front', 'id_back', 'status']
+        widgets = {
+            'birth_date': date_input(),
+            'id_front': forms.FileInput(attrs={'accept': 'image/*'}),
+            'id_back': forms.FileInput(attrs={'accept': 'image/*'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for name in ('sex', 'civil_status', 'email', 'employer_name', 'emergency_contact_name', 'emergency_contact_no'):
+        for name in ('sex', 'civil_status', 'email', 'employer_name', 'emergency_contact_name',
+                     'emergency_contact_no', 'id_front', 'id_back'):
             self.fields[name].required = True
         self.fields['middle_name'].required = False
         self.fields['employer_name'].label = 'Employer or business name'
         self.fields['emergency_contact_name'].label = 'Emergency contact name'
         self.fields['emergency_contact_no'].label = 'Emergency contact number'
+        self.fields['id_front'].label = 'Valid ID photo (front)'
+        self.fields['id_back'].label = 'Valid ID photo (back)'
+
+    def check_image(self, name):
+        image = self.cleaned_data.get(name)
+        if isinstance(image, UploadedFile) and image.size > 5 * 1024 * 1024:
+            raise forms.ValidationError('Photo must be 5 MB or smaller.')
+        return image
+
+    def clean_id_front(self):
+        return self.check_image('id_front')
+
+    def clean_id_back(self):
+        return self.check_image('id_back')
 
     def clean(self):
         data = super().clean()
@@ -138,13 +158,14 @@ class SignupForm(ClientForm):
     class Meta(ClientForm.Meta):
         fields = ['first_name', 'middle_name', 'last_name', 'sex', 'civil_status', 'birth_date', 'contact_no',
                   'email', 'address', 'employer_name', 'occupation', 'monthly_income',
-                  'emergency_contact_name', 'emergency_contact_no', 'valid_id_type', 'valid_id_no']
+                  'emergency_contact_name', 'emergency_contact_no', 'valid_id_type', 'valid_id_no',
+                  'id_front', 'id_back']
 
     field_order = ['username', 'password1', 'password2', 'first_name', 'middle_name', 'last_name', 'sex',
                    'civil_status', 'birth_date', 'contact_no', 'email', 'address', 'employer_name',
                    'occupation', 'monthly_income', 'emergency_contact_name', 'emergency_contact_no',
-                   'valid_id_type', 'valid_id_no']
-
+                   'valid_id_type', 'valid_id_no', 'id_front', 'id_back']
+    
     def clean_username(self):
         username = self.cleaned_data['username']
         if User.objects.filter(username__iexact=username).exists():

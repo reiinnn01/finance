@@ -1,6 +1,9 @@
+import os
+import uuid
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
+
 
 
 class Role(models.Model):
@@ -82,6 +85,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         parts = (self.full_name or self.username).split()
         return ''.join(p[0] for p in parts[:2]).upper()
 
+def id_upload(instance, filename):
+    return f'ids/{uuid.uuid4().hex}{os.path.splitext(filename)[1].lower()}'
 
 class Client(models.Model):
     class Status(models.TextChoices):
@@ -118,6 +123,8 @@ class Client(models.Model):
     emergency_contact_no = models.CharField(max_length=20, blank=True, default='')
     valid_id_type = models.CharField(max_length=50)
     valid_id_no = models.CharField(max_length=50)
+    id_front = models.ImageField(upload_to=id_upload, blank=True)
+    id_back = models.ImageField(upload_to=id_upload, blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)

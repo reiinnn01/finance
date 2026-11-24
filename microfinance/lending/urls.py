@@ -28,6 +28,7 @@ urlpatterns = [
     path('clients/<int:pk>/', views.ClientDetail.as_view(), name='client_detail'),
     path('clients/<int:pk>/edit/', views.ClientUpdate.as_view(), name='client_update'),
     path('clients/<int:pk>/delete/', views.ClientDelete.as_view(), name='client_delete'),
+    path('clients/<int:pk>/id/<slug:side>/', views.ClientIdImage.as_view(), name='client_id_image'),
 
     path('applications/', views.ApplicationList.as_view(), name='application_list'),
     path('applications/new/', views.ApplicationCreate.as_view(), name='application_create'),

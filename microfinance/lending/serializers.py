@@ -8,7 +8,7 @@ class ClientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Client
-        fields = '__all__'
+        exclude = ['id_front', 'id_back']
         read_only_fields = ['registered_by', 'created_at']
 
 
